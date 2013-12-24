@@ -1,0 +1,10 @@
+Questions for Micro Project
+
+############################
+
+24/12/2013:
+
+1. How many instructions are to be fetched to the instruction buffer every cycle (superscalar or not)?
+2. What is the replacement policy for the instruction buffer (replace every issued instruction/wait till the buffer is empty/etc..) ?
+3. Is there a difference between instruction cache and instruction memory?
+4. [RESOLVED, Lec 12] What are ROB entries? (as specified in the project description, page 2)

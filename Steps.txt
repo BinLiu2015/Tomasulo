@@ -1,0 +1,17 @@
+What to do each cycle:
+
+1. Fetch instruction from memory to instruction buffer | Free slot in instruction buffer.
+2. Issue one instruction (Q OR V based on Register Status) |Free RS, Free ROB.
+
+Loop over RS:
+
+3a. Change to Execute | In issue state, Qj Qk are 0
+3b. Decrement remaining cycles | In execute state
+
+Loop over RS:
+
+4. Write back to ROB & All awaiting units (by looping over all RS and checking Qj and Qk) | Remaining time is zero.
+
+Loop over ROB:
+
+5. Commit (Write back to Register File OR Memory) OR Flush if mispredicted branch | ROB entry is ready, At head.
