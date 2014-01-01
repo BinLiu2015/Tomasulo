@@ -1,6 +1,6 @@
 package entries;
 
-public class DataEntry {
+public class DataEntry implements Entry {
 	int value;
 	
 	public DataEntry(int value){

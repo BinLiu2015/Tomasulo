@@ -4,7 +4,7 @@ import java.io.*;
 import memory.Memory;
 
 import entries.*;
-
+import buffers.*;
 
 public class Simulator {
 	
@@ -16,15 +16,11 @@ public class Simulator {
 	
 	static int[] regFile;
 	static int[] regStatus;
-	static InstEntry[] instructionMemory;
+	static InstructionEntry[] instructionMemory;
 	
-	static InstEntry[] instructionBuffer;
-	static int ibHead;
-	static int ibTail;
-	
-	static RobEntry[] rob;
-	static int robHead;
-	static int robTail;
+	static InstructionBuffer instructionBuffer;	
+	static ReorderBuffer reorderBuffer;
+
 	
 	static ReservationStation[] resvStations;
 	
@@ -80,21 +76,20 @@ public class Simulator {
 	static void commit(){
 		//TODO: Flushing when wrong branch prediction
 		
-		if(robHead == robTail){
+		if(reorderBuffer.isEmpty()){
 			if(programDone) commitDone = true;
 			return; //Empty buffer
 		}
 		
-		RobEntry entry = rob[robHead];
+		RobEntry entry = (RobEntry) reorderBuffer.getFirst();
 		
-		if(isMemory(entry.type)){
-			memory[entry.destination] = entry.value;
-			//TODO: actual memory access
+		if(isMemory(entry.getType())){
+			memory.writeData(entry.getDest(), entry.getVal());
 		} else{
-			regFile[entry.destination] = entry.value;
+			regFile[entry.getDest()] = entry.getVal();
 		}
 		
-		robHead++;
+		reorderBuffer.moveHead();
 	}
 	
 	static void write(){
@@ -108,8 +103,10 @@ public class Simulator {
 				Integer result = run(entry); //Value from functional unit
 				if(result == null) return;
 				
-				rob[entry.dest].ready = true;
-				rob[entry.dest].value = result;
+				//Updating Reorder Buffer Entry
+				RobEntry robEntry = (RobEntry)reorderBuffer.getFirst();
+				robEntry.setReady();
+				robEntry.setValue(result);
 				
 				//Updating reservation stations
 				for(int j=0; j<resvStations.length; j++){
@@ -140,14 +137,14 @@ public class Simulator {
 	}
 	
 	static void issue(){
-		InstEntry entry = instructionBuffer[ibHead];
-		ReservationStation rs = getEmptyRS(entry.type);
-		if(rs!=null){
-			//if( ((robTail+1)%rob.length) == robHead) return;
-			
-			if(!instructionBuffer.isEmpty() && !rob.isFull()){
+		if(instructionBuffer.isEmpty() || reorderBuffer.isFull()) return;
+		
+		InstructionEntry entry = (InstructionEntry) instructionBuffer.getFirst();
+		ReservationStation rs = getEmptyRS(entry.getType());
+		if(rs!=null){	
+			if(!instructionBuffer.isEmpty() && !reorderBuffer.isFull()){
 				//TODO: Issue, fill in reservation station and rob and register status table,
-				// move instructionBuffer head
+				instructionBuffer.moveHead();
 				
 				//Don't forget to compute entry address for load and store
 			}
@@ -156,11 +153,13 @@ public class Simulator {
 	
 	static void fetch(){
 		//TODO: Check that the instruction fetched is the pseudo end
-		InstEntry entry = (InstEntry)memory.readInstruction(pc*2);
+		InstructionEntry entry = (InstructionEntry)memory.readInstruction(pc*2);
 		
 		if(entry != null && !instructionBuffer.isFull()){
 			instructionBuffer.add(entry);
 			pc+=1; // For now, word consists of 2 bytes, and we're accessing the first byte
+			
+			//TODO: Update pc if jump/branch
 		}
 	}
 	
