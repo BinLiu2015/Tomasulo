@@ -17,7 +17,27 @@ public class ReservationStation {
 	public Integer run(){
 		switch(type) {
 		case ADD:
+		case ADDI:
 			return vj + vk;
+			break;
+		case SUB:
+			return vj - vk;
+			break;
+		case MULT:
+			return vj * vk;
+			break;
+		case NAND:
+			return ~(vj & vk);
+			break;
+		case LOAD:
+			return (Integer) Simulator.memory.read(address);
+			break;
+		case STORE:
+			return Simulator.memory.writeData(address, vk) ? null : 1;
+			break;
+		case BRANCH:
+			Simulator.reorderBuffer.get(dest);
+			
 		default:
 			return null;
 		}
