@@ -162,8 +162,12 @@ public class Simulator {
 			instructionBuffer.add(inst);
 			
 			switch(inst.getType()) {
-			case InstructionType.BRANCH:
-				break;
+			case JUMP:
+				pc += inst.getRS();
+			case BRANCH:
+				pc += inst.getRT();
+			case JUMPL:
+				pc += inst.getRS();
 				default:
 					break;
 			}
