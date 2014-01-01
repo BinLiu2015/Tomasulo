@@ -8,5 +8,4 @@ public class ReorderBuffer extends CircularBuffer{
 		super();
 		buffer = new RobEntry[size];
 	}
-	
 }
