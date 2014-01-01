@@ -1,3 +1,4 @@
+package entries;
 
 public enum InstructionType {
 	LOAD, STORE, 

@@ -1,3 +1,5 @@
+import entries.InstructionType;
+
 
 public class ReservationStation {
 	

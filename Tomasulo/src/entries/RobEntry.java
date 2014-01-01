@@ -1,5 +1,7 @@
+package entries;
 
-public class ReorderBuffer {
+
+public class RobEntry {
 	
 	int destination; //Register Index or Memory Address
 	int value; //Value to be committed
