@@ -1,11 +1,26 @@
 package entries;
 
-
 public class InstEntry {
-	
-	int rs, rt; // Address is rt in case of load/store
-	int rd;
-	
-	InstructionType type;
-	
+
+	private int rs, rt; // Address is rt in case of load/store
+	private int rd;
+
+	private InstructionType type;
+
+	public InstructionType getType() {
+		return type;
+	}
+
+	public int getRS() {
+		return rs;
+	}
+
+	public int getRT() {
+		return rt;
+	}
+
+	public int getRD() {
+		return rd;
+	}
+
 }
