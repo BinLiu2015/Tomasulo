@@ -31,8 +31,16 @@ public class CircularBuffer {
 		return true;
 	}
 	
+	public Entry get(int address){
+		return buffer[address];
+	}
+	
 	public Entry getFirst(){
 		if(isEmpty()) return null;
 		return buffer[head];
+	}
+	
+	public int tailIndex(){
+		return tail;
 	}
 }

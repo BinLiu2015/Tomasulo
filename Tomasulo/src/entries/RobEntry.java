@@ -23,6 +23,10 @@ public class RobEntry implements Entry{
 		value = val;
 	}
 	
+	public void setDestination(int destination){
+		this.destination = destination;
+	}
+	
 	public int getDest(){
 		return destination;
 	}
