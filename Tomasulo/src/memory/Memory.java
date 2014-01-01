@@ -16,7 +16,9 @@ public class Memory {
 		this.accessTime = accessTime;
 	}
 	
+	
 	public Object read(int address){
+		//Example read from memory
 		if(!reading){
 			reading = true;
 			curAddress = address;
@@ -33,4 +35,21 @@ public class Memory {
 		}
 	}
 	
+	public Object readData(int address){
+		//TODO
+		//Should start trying to read from L1 data cache
+		return null;
+	}
+	
+	public Object readInstruction(int address){
+		//TODO
+		//Should start trying to read from L1 instruction cache
+		return null;
+	}
+	
+	public boolean writeData(int address, int val){
+		//TODO
+		//Should create new DataEntry and write back value
+		return false;
+	}
 }
