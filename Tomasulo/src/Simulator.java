@@ -156,10 +156,17 @@ public class Simulator {
 	
 	static void fetch(){
 		//TODO: Check that the instruction fetched is the pseudo end
-		InstEntry entry = (InstEntry)memory.readInstruction(pc*2);
+		InstEntry inst = (InstEntry)memory.readInstruction(pc*2);
 		
-		if(entry != null && !instructionBuffer.isFull()){
-			instructionBuffer.add(entry);
+		if(inst != null && !instructionBuffer.isFull()){
+			instructionBuffer.add(inst);
+			
+			switch(inst.getType()) {
+			case InstructionType.BRANCH:
+				break;
+				default:
+					break;
+			}
 			pc+=1; // For now, word consists of 2 bytes, and we're accessing the first byte
 		}
 	}
