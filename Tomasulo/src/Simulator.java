@@ -58,18 +58,6 @@ public class Simulator {
 		return type == InstructionType.LOAD || type == InstructionType.STORE;
 	}
 
-	static Integer run(ReservationStation entry) {
-		// TODO: return correct results for each instruction type
-
-		if (entry.type == InstructionType.LOAD) {
-			DataEntry data = (DataEntry) memory.readData(entry.address);
-			if (data == null)
-				return null;
-		}
-
-		return 10;
-	}
-
 	static ReservationStation getEmptyRS(InstructionType type) {
 		for (int i = 0; i < resvStations.length; i++) {
 			ReservationStation entry = resvStations[i];

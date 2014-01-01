@@ -30,7 +30,7 @@ public class ReservationStation {
 			return ~(vj & vk);
 			break;
 		case LOAD:
-			return (Integer) Simulator.memory.read(address);
+			return (Integer) Simulator.memory.readData(address);
 			break;
 		case STORE:
 			return Simulator.memory.writeData(address, vk) ? null : 1;
