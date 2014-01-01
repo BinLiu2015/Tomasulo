@@ -154,10 +154,21 @@ public class Simulator {
 	
 	static void fetch(){
 		//TODO: Check that the instruction fetched is the pseudo end
-		InstructionEntry entry = (InstructionEntry)memory.readInstruction(pc*2);
+		InstructionEntry inst = (InstructionEntry)memory.readInstruction(pc*2);
 		
-		if(entry != null && !instructionBuffer.isFull()){
-			instructionBuffer.add(entry);
+		if(inst != null && !instructionBuffer.isFull()){
+			instructionBuffer.add(inst);
+			
+			switch(inst.getType()) {
+			case JUMP:
+				pc += inst.getRS();
+			case BRANCH:
+				pc += inst.getRT();
+			case JUMPL:
+				pc += inst.getRS();
+				default:
+					break;
+			}
 			pc+=1; // For now, word consists of 2 bytes, and we're accessing the first byte
 			
 			//TODO: Update pc if jump/branch
