@@ -1,5 +1,12 @@
 package buffers;
 
-public class InstructionBuffer extends CircularBuffer{
+import entries.InstructionEntry;
 
+public class InstructionBuffer extends CircularBuffer{
+	
+	public InstructionBuffer(int size){
+		super();
+		buffer = new InstructionEntry[size];
+	}
+	
 }

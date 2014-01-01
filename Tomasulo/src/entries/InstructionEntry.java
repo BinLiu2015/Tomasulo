@@ -1,6 +1,6 @@
 package entries;
 
-public class InstEntry {
+public class InstructionEntry implements Entry{
 
 	private int rs, rt; // Address is rt in case of load/store
 	private int rd;
