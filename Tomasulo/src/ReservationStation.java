@@ -14,4 +14,20 @@ public class ReservationStation {
 	Stage stage;
 	InstructionType type;
 	
+	public Integer run(){
+		switch(type) {
+		case ADD:
+			return vj + vk;
+		default:
+			return null;
+		}
+	}
+
+	public void clear() {
+		vj = vk = qj = qk = dest = address = remainingCycles = 0;
+		busy = false;
+		type = null;
+		stage = null;
+	}
+	
 }

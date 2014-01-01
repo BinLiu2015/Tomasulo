@@ -17,6 +17,10 @@ public class CircularBuffer {
 		return head == tail;
 	}
 	
+	public void flush() {
+		head = tail;
+	}
+	
 	public boolean isFull(){
 		return head == ((tail+1)%buffer.length);
 	}
