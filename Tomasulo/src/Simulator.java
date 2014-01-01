@@ -1,12 +1,15 @@
 import java.util.*;
 import java.io.*;
 
+import memory.Memory;
+
 import entries.*;
 
 
 public class Simulator {
 	
 	//TODO: Implementing actual memory access
+	//TODO: Change arrays of instruction buffers and rob to use buffer classes
 	
 	static int cycle; // Current cycle
 	static int pc;
@@ -25,7 +28,7 @@ public class Simulator {
 	
 	static ReservationStation[] resvStations;
 	
-	static int[] memory;
+	static Memory memory;
 	
 	static HashMap<InstructionType, Integer> instructionCycles;
 	//Number of cycles to be taken by each instruction type
@@ -45,6 +48,7 @@ public class Simulator {
 		cycle = 0;
 		
 		regFile = new int[8]; // repeat for all arrays
+		memory = new Memory(10);
 		
 		programDone = false;
 		commitDone = false;

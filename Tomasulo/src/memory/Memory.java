@@ -12,6 +12,11 @@ public class Memory {
 	final int accessTime;
 	
 	public Memory(int accessTime){
+		
+		/* Example constructor, taking access time of one level. Should take in if there are L2, L3,
+		 * full cache geometry (S,L,m)
+		 */
+		
 		memory = new Object[65536]; // Byte addressable, each word is 2 bytes, entry in first byte
 		this.accessTime = accessTime;
 	}
