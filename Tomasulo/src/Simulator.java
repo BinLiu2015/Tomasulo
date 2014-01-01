@@ -105,7 +105,7 @@ public class Simulator {
 	
 				for (ReservationStation rs : resvStations)
 					rs.clear();
-				pc = entry.getDest() + entry.getVal();
+				pc = (entry.isBranchTaken()) ? entry.getDest() : entry.getDest() + entry.getVal();
 			}
 			break;
 			default:
@@ -188,7 +188,7 @@ public class Simulator {
 				.readInstruction(pc * 2);
 
 		if (inst != null && !instructionBuffer.isFull()) {
-			instructionBuffer.add(inst);
+
 
 			switch (inst.getType()) {
 			case JUMP: {
@@ -197,21 +197,24 @@ public class Simulator {
 			}
 			case BRANCH: {
 				pc += inst.getRT() + 1;
+				instructionBuffer.add(inst);
 				break;
 			}
 			case JUMPL: {
 				pc += regFile[inst.getRS()];
+				regFile[inst.getRD()] = pc + 1;
 				break;
 			}
 			case RET: {
-				stopFetch = true;
+				pc = regFile[inst.getRD()];
 				break;
 			}
 			default:
 				pc += 1; // For now, word consists of 2 bytes, and we're
 							// accessing the first byte
+				instructionBuffer.add(inst);
 				break;
-			}
+			}	
 		}
 	}
 
