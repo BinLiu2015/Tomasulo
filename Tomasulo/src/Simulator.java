@@ -146,7 +146,8 @@ public class Simulator {
 				//TODO: Issue, fill in reservation station and rob and register status table,
 				instructionBuffer.moveHead();
 				
-				//Don't forget to compute entry address for load and store
+				//TODO: Don't forget to compute entry address for load and store
+				RobEntry robEntry = new RobEntry(entry.getRD(), entry.getType());
 			}
 		}
 	}
