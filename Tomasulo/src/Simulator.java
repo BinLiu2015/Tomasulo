@@ -19,7 +19,7 @@ public class Simulator {
 	static InstructionBuffer instructionBuffer;
 	static ReorderBuffer reorderBuffer;
 
-	static ReservationStation[] resvStations;
+	static ArrayList<ReservationStation> resvStations;
 
 	static Memory memory;
 
@@ -49,19 +49,19 @@ public class Simulator {
 		instructionBuffer = new InstructionBuffer(100);
 		reorderBuffer = new ReorderBuffer(100);
 		
-		resvStations = new ReservationStation[6]; //TODO: Change to arraylist
-		resvStations[0] = new ReservationStation(InstructionType.ADD);
-		resvStations[1] = new ReservationStation(InstructionType.ADD);
-		resvStations[2] = new ReservationStation(InstructionType.MUL);
-		resvStations[3] = new ReservationStation(InstructionType.MUL);
-		resvStations[4] = new ReservationStation(InstructionType.BEQ);
-		resvStations[5] = new ReservationStation(InstructionType.BEQ);
+		resvStations = new ArrayList<ReservationStation>();
+		resvStations.add(new ReservationStation(InstructionType.ADD));
+		resvStations.add(new ReservationStation(InstructionType.ADD));
+		resvStations.add(new ReservationStation(InstructionType.MUL));
+		resvStations.add(new ReservationStation(InstructionType.MUL));
+		resvStations.add(new ReservationStation(InstructionType.BEQ));
+		resvStations.add(new ReservationStation(InstructionType.BEQ));
 		
 		
 		memory = new Memory(instructionList, 0);
 		
 		instructionCycles = new HashMap<InstructionType, Integer>();
-		instructionCycles.put(InstructionType.ADD, 4);
+		instructionCycles.put(InstructionType.ADD, 1);
 		instructionCycles.put(InstructionType.BEQ, 1);
 		instructionCycles.put(InstructionType.LW, 1);
 		instructionCycles.put(InstructionType.MUL, 1);
@@ -84,8 +84,8 @@ public class Simulator {
 
 	static ReservationStation getEmptyRS(InstructionType type) {
 		// TODO: Check how to handle similar instruction types
-		for (int i = 0; i < resvStations.length; i++) {
-			ReservationStation entry = resvStations[i];
+		for (int i = 0; i < resvStations.size(); i++) {
+			ReservationStation entry = resvStations.get(i);
 			if (entry.busy == false && entry.type == getFunctionalUnit(type))
 				return entry;
 		}
@@ -128,6 +128,8 @@ public class Simulator {
 
 				for (ReservationStation rs : resvStations)
 					rs.clear();
+				for(int i=0; i<regStatus.length; i++) regStatus[i] = -1;
+				
 				pc = (entry.isBranchTaken()) ? entry.getDest() + entry.getVal() : entry
 						.getDest();
 				programDone = false;
@@ -143,8 +145,8 @@ public class Simulator {
 	}
 
 	static void write() {
-		for (int i = 0; i < resvStations.length; i++) {
-			ReservationStation rs = resvStations[i];
+		for (int i = 0; i < resvStations.size(); i++) {
+			ReservationStation rs = resvStations.get(i);
 			if (rs.busy && rs.stage == Stage.EXECUTE && rs.remainingCycles <= 0) {
 				// Updating ROB
 
@@ -164,8 +166,8 @@ public class Simulator {
 				}
 
 				// Updating reservation stations
-				for (int j = 0; j < resvStations.length; j++) {
-					ReservationStation resvStation = resvStations[j];
+				for (int j = 0; j < resvStations.size(); j++) {
+					ReservationStation resvStation = resvStations.get(j);
 					if (rs.getRob() == resvStation.qj) {
 						resvStation.qj = -1;
 						resvStation.vj = result;
@@ -183,8 +185,8 @@ public class Simulator {
 	}
 
 	static void execute() {
-		for (int i = 0; i < resvStations.length; i++) {
-			ReservationStation entry = resvStations[i];
+		for (int i = 0; i < resvStations.size(); i++) {
+			ReservationStation entry = resvStations.get(i);
 			if (entry.busy == false)
 				continue;
 

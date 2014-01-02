@@ -1,4 +1,5 @@
+BEQ 0, 0, 1
 ADDI 2, 2, 1
-BEQ 3, 2, -1
+BEQ 3, 2, -2
 ADD 4, 0, 0
 end
