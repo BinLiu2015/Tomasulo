@@ -148,9 +148,9 @@ public class Cache {
 	}
 
 	public static void main(String[] args) throws Exception {
-		L1Cache nc = new L1Cache(L1Cache.WRITE_THROUGH, 10, 256, 32, 2);
-		L2Cache nc2 = new L2Cache(L1Cache.WRITE_THROUGH, 10, 256, 64, 2);
-		L3Cache nc3 = new L3Cache(L1Cache.WRITE_THROUGH, 10, 512, 128, 2);
+		L1Cache nc = new L1Cache(L1Cache.WRITE_BACK, 10, 256, 32, 2);
+		L2Cache nc2 = new L2Cache(L1Cache.WRITE_BACK, 10, 256, 64, 2);
+		L3Cache nc3 = new L3Cache(L1Cache.WRITE_BACK, 10, 512, 128, 2);
 		Memory mem = new Memory(1024, 100);
 		nc3.setL1(nc);
 		nc3.setL2(nc2);
@@ -178,9 +178,6 @@ public class Cache {
 		System.out.println(nc2);
 		System.out.println(nc);
 		System.out.println(mem);
-
-		System.out.println(read(22, 11, s, false));
-		System.out.println(read(14, 8, s, false));
 
 		System.out.println("*****************");
 		System.out.println(nc3);

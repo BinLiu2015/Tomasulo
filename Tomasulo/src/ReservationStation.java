@@ -114,10 +114,8 @@ public class ReservationStation {
 		case NAND:
 			return ~(vj & vk);
 		case LW:
-			address = vj + address;
 			return (Integer) Simulator.memory.readData(address, Simulator.cycle);
 		case SW:
-			address = vj + address;
 			((RobEntry)Simulator.reorderBuffer.get(rob)).setDestination(address);
 			return vk;
 		case BEQ:
