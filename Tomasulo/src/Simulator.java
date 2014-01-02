@@ -37,20 +37,20 @@ public class Simulator {
 
 		Assembler assembler = new Assembler();
 		ArrayList<InstructionEntry> instructionList = assembler.read();
-		
+
 		cycle = 0;
 		pc = 0;
-		
+
 		regFile = new int[8]; // repeat for all arrays
 		regStatus = new int[8];
-		for(int i=0; i<8; i++){
+		for (int i = 0; i < 8; i++) {
 			regFile[i] = i;
 			regStatus[i] = -1;
 		}
-		
+
 		instructionBuffer = new InstructionBuffer(100);
 		reorderBuffer = new ReorderBuffer(100);
-		
+
 		resvStations = new ArrayList<ReservationStation>();
 		resvStations.add(new ReservationStation(InstructionType.ADD));
 		resvStations.add(new ReservationStation(InstructionType.ADD));
@@ -63,16 +63,17 @@ public class Simulator {
 		
 		
 		//memory = new MemoryWrapper(instructionList, 0);
+
 		memory = new MemoryWrapper();
 		memory.loadInstructions(instructionList, 0);
-		
+
 		instructionCycles = new HashMap<InstructionType, Integer>();
 		instructionCycles.put(InstructionType.ADD, 1);
 		instructionCycles.put(InstructionType.BEQ, 1);
 		instructionCycles.put(InstructionType.LW, 1);
 		instructionCycles.put(InstructionType.MUL, 1);
 		instructionCycles.put(InstructionType.SW, 1);
-		
+
 		programDone = false;
 		commitDone = false;
 	}
@@ -111,12 +112,11 @@ public class Simulator {
 	}
 
 	static void commit() {
- 		if (reorderBuffer.isEmpty()) {
+		if (reorderBuffer.isEmpty()) {
 			if (programDone)
 				commitDone = true;
 			return; // Empty buffer
 		}
-
 
 		RobEntry entry = (RobEntry) reorderBuffer.getFirst();		
 		if(!entry.isReady()) return;
@@ -138,10 +138,11 @@ public class Simulator {
 
 				for (ReservationStation rs : resvStations)
 					rs.clear();
-				for(int i=0; i<regStatus.length; i++) regStatus[i] = -1;
-				
-				pc = (entry.isBranchTaken()) ? entry.getDest() + entry.getVal() : entry
-						.getDest();
+				for (int i = 0; i < regStatus.length; i++)
+					regStatus[i] = -1;
+
+				pc = (entry.isBranchTaken()) ? entry.getDest() + entry.getVal()
+						: entry.getDest();
 				programDone = false;
 			} else {
 				reorderBuffer.moveHead();
@@ -225,8 +226,7 @@ public class Simulator {
 			if (regStatus[inst.getRS()] != -1) {
 				rs.qj = regStatus[inst.getRS()];
 				rs.vj = 0;
-			} 
-			else {
+			} else {
 				// Ready in ROB but not in Reg file (Written but not committed
 				int testRob = reorderBuffer.findDest(inst.getRS());
 				if (testRob != -1) {
@@ -307,6 +307,7 @@ public class Simulator {
 	static void fetch() {
 		if (programDone)
 			return;
+
 		InstructionEntry inst = null;;
 		
 		try{
@@ -319,13 +320,14 @@ public class Simulator {
 				
 		if (inst!= null && !instructionBuffer.isFull()) {
 			System.out.println("Fetched instruction " + inst.getType());
+
 			switch (inst.getType()) {
 			case JMP: {
 				pc += 1 + regFile[inst.getRD()] + inst.getRS();
 				break;
 			}
 			case BEQ: {
-				inst.setPcAddress(pc+1);
+				inst.setPcAddress(pc + 1);
 				pc += (inst.getRT() >= 0) ? 1 : inst.getRT() + 1;
 				instructionBuffer.add(inst);
 				break;
@@ -342,20 +344,27 @@ public class Simulator {
 			case END:
 				programDone = true;
 			default:
-				pc += 1; 
-				// For now, word consists of 2 bytes, and we're accessing the first byte
+				pc += 1;
+				// For now, word consists of 2 bytes, and we're accessing the
+				// first byte
 				instructionBuffer.add(inst);
 				break;
 			}
 		}
 	}
 
-	public static void main(String[] args) throws IOException {
+	public static void createRS(int count, int time, InstructionType type) {
+		for (int i = count; i > 0; i--)
+			resvStations.add(new ReservationStation(type));
+		instructionCycles.put(type, time);
+	}
 
-		initializeDefault();
+	public static void run() {
+
+		// initializeDefault();
 
 		while (!commitDone) {
-			
+
 			commit();
 			write();
 			execute();
@@ -366,9 +375,18 @@ public class Simulator {
 			// Dont increment cycles if done
 			cycle++;
 		}
-		
+
 		System.out.println("Number of cycles taken is " + cycle);
-		for(int i=0; i<regFile.length; i++) System.out.print(regFile[i] + " ");
+		System.out.println("IPC: "  + (pc-1) / (double)cycle );
+		System.out.println("For Lv1 Cache: " + memory.getL1CacheR());
+		System.out.println("For Lv2 Cache: " + memory.getL2CacheR());
+		System.out.println("For Lv3 Cache: " + memory.getL3CacheR());
+		for (int i = 0; i < regFile.length; i++)
+			System.out.print(regFile[i] + " ");
 	}
 
+	public static void main(String... args) {
+		initializeDefault();
+		run();
+	}
 }

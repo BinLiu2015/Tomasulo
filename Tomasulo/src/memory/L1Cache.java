@@ -13,8 +13,8 @@ public class L1Cache {
 	private int memAddSize;
 	private int disp;
 	final static String NOT_FOUND = "not found l1";
-	final static String WRITE_BACK = "Write Back";
-	final static String WRITE_THROUGH = "Write Through";
+	public final static String WRITE_BACK = "Write Back";
+	public final static String WRITE_THROUGH = "Write Through";
 
 	public L1Cache(String wp, int c, int s, int l, int m) {
 		writePolicy = wp;
