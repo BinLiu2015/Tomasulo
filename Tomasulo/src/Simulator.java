@@ -110,6 +110,8 @@ public class Simulator {
 					rs.clear();
 				pc = (entry.isBranchTaken()) ? entry.getDest() : entry
 						.getDest() + entry.getVal();
+			} else {
+				reorderBuffer.moveHead();
 			}
 			break;
 		default:
@@ -186,9 +188,17 @@ public class Simulator {
 			if (regStatus[inst.getRS()] != -1) {
 				rs.qj = regStatus[inst.getRS()];
 				rs.vj = 0;
-			} else {
+			} else if (reorderBuffer.findDest(inst.getRS()) != -1) {
 				rs.qj = 0;
-				rs.vj = regFile[inst.getRS()];
+			} else {
+				// Ready in ROB but not in Reg file (Written but not committed
+				int testRob = reorderBuffer.findDest(inst.getRS());
+				if (testRob != -1) {
+					rs.vj = testRob;
+				} else {
+					rs.vj = regFile[inst.getRS()];
+				}
+				rs.qj = 0;
 			}
 
 			switch (inst.getType()) {
@@ -200,19 +210,30 @@ public class Simulator {
 					rs.qk = regStatus[inst.getRT()];
 					rs.vk = 0;
 				} else {
+					int testRob = reorderBuffer.findDest(inst.getRT());
+					if (testRob != -1) {
+						rs.vk = testRob;
+					} else {
+						rs.vk = regFile[inst.getRT()];
+					}
 					rs.qk = 0;
-					rs.vk = regFile[inst.getRT()];
 				}
 				break;
 			case BRANCH:
 			case STORE:
 				if (regStatus[inst.getRD()] != -1) {
-					rs.qk = regStatus[inst.getRT()];
+					rs.qk = regStatus[inst.getRD()];
 					rs.vk = 0;
 				} else {
+					int testRob = reorderBuffer.findDest(inst.getRD());
+					if (testRob != -1) {
+						rs.vk = testRob;
+					} else {
+						rs.vk = regFile[inst.getRD()];
+					}
 					rs.qk = 0;
-					rs.vk = regFile[inst.getRT()];
 				}
+				rs.address = inst.getRT();
 				break;
 			default:
 				rs.qk = 0;
@@ -234,9 +255,8 @@ public class Simulator {
 			if (writesToReg(rs.getType())) {
 				regStatus[destination] = reorderBuffer.tailIndex();
 			} else if (inst.getType() == InstructionType.BRANCH) {
-				destination = inst.getInstAddress(); // put the original pc in
-														// the dest field of the
-														// rob
+				destination = inst.getInstAddress();
+				// put the original pc in the dest field of the rob
 			} else {
 				destination = -1;
 			}
@@ -296,9 +316,9 @@ public class Simulator {
 			execute();
 			issue();
 			fetch();
-			
-			//TODO: Conclude the simulation, calculate output
-			//		Dont increment cycles if done
+
+			// TODO: Conclude the simulation, calculate output
+			// Dont increment cycles if done
 			cycle++;
 		}
 	}

@@ -46,4 +46,9 @@ public class RobEntry implements Entry {
 	public void setBranchTaken(boolean b) {
 		branchTaken = b;
 	}
+	
+	public boolean isReady(){
+		return ready;
+	}
+
 }
