@@ -17,7 +17,7 @@ public class Cache {
 
 	public static int read(int address, long currentTime, Instruction instruction) throws Exception{
 		instruction.setCacheStartTime(currentTime);
-		int value;
+		Object value;
 		
 		
 		/**
@@ -135,7 +135,7 @@ public class Cache {
 	}
 	
 	
-	public static void write(int address, int value,  long currentTime, Instruction instruction) throws Exception{
+	public static void write(int address, Object value,  long currentTime, Instruction instruction) throws Exception{
 		l1Cache.writeToCache(address, value, currentTime, instruction);
 		//System.out.println(Processor.mem.toString());
 	}

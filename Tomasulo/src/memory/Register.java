@@ -3,7 +3,7 @@ package memory;
 public class Register {
 	
 	String name;
-	int value;
+	Object value;
 	private final String UNDEFINED = "undefined";
 	
 	public Register(){
@@ -12,7 +12,7 @@ public class Register {
 	}
 	
 	
-	public Register(String name, int value) {
+	public Register(String name, Object value) {
 		this.name = name;
 		this.value = value;
 	}
@@ -26,7 +26,7 @@ public class Register {
 	public int getValue() {
 		return value;
 	}
-	public void setValue(int value) {
+	public void setValue(Object value) {
 		this.value = value;
 	}
 	

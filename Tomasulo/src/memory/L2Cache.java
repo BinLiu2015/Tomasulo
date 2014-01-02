@@ -132,7 +132,7 @@ public class L2Cache {
 		return newIndex;
 	}
 	
-	public void updateValue(int address, int value, long currentTime){
+	public void updateValue(int address, Object value, long currentTime){
 		int baseAddress = (int) (address - address%Math.pow(2, disp)); //The base address is modified in the code below 
 		for(int i = 0; i<cache.length; i++){
 			if(cache[i][0]!=null)
@@ -247,7 +247,7 @@ public class L2Cache {
 	
 	private void updateMemoryAndCaches(int cacheLine, int indexInCacheLine, long currentTime) {
 		int address = cache[cacheLine][indexInCacheLine].getAddress();
-		int value = cache[cacheLine][indexInCacheLine].getValue();
+		Object value = cache[cacheLine][indexInCacheLine].getValue();
 		Memory.store(address, value);
 		if(l3!=null){
 			//TODO salnseh

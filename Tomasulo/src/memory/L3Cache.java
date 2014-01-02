@@ -42,7 +42,7 @@ public class L3Cache {
 		throw new Exception(NOT_FOUND, new Throwable());
 	}
 	
-	public void updateValue(int address, int value, long currentTime){
+	public void updateValue(int address, Object value, long currentTime){
 		int baseAddress = (int) (address - address%Math.pow(2, disp)); //The base address is modified in the code below 
 		for(int i = 0; i<cache.length; i++){
 			if(cache[i][0]!=null)

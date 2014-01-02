@@ -2,10 +2,10 @@ package memory;
 
 public class CacheEntry {
 	private int address;
-	private int value;
+	private Object value;
 	private boolean dirty;
 	private long timeInCache;
-	public CacheEntry(int address, int value, long timeInCache) {
+	public CacheEntry(int address, Object value, long timeInCache) {
 		this.address = address;
 		this.value = value;
 		this.timeInCache = timeInCache;
@@ -31,7 +31,7 @@ public class CacheEntry {
 		return value;
 	}
 
-	public void setValue(int value) {
+	public void setValue(Object value) {
 		this.value = value;
 	}
 

@@ -13,7 +13,7 @@ public class Memory {
 		return mem[address];
 	}
 
-	public static void store(int address, int value) {
+	public static void store(int address, Object value) {
 		mem[address] = value;
 	}
 

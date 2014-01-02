@@ -105,7 +105,7 @@ public class L1Cache {
 
 	}
 	
-	private void writeBack(int address, int value, long currentTime, int index){
+	private void writeBack(int address, Object value, long currentTime, int index){
 		int i = 0;
 		int size = l/16;
 		for(;i<size; i++){
@@ -116,7 +116,7 @@ public class L1Cache {
 		}
 	}
 	
-	private void writeThrough(int address, int value, long currentTime, int index){
+	private void writeThrough(int address, Object value, long currentTime, int index){
 		int i = 0;
 		int size = s/l;
 		
@@ -129,7 +129,7 @@ public class L1Cache {
 		}
 	}
 	
-	public void writeToCache(int address, int value, long currentTime, Instruction instruction) throws Exception{
+	public void writeToCache(int address, Object value, long currentTime, Instruction instruction) throws Exception{
 		int baseAdress = (int) (address - address%Math.pow(2, disp));
 		int index = 0;
 		boolean found = false;
@@ -190,7 +190,7 @@ public class L1Cache {
 		}
 	}
 	
-	private void updateMemoryAndCaches2(int address, int value, long currentTime) {
+	private void updateMemoryAndCaches2(int address, Object value, long currentTime) {
 		Memory.store(address, value);
 		if(l2!=null){
 			//TODO salnseh
@@ -324,7 +324,7 @@ public class L1Cache {
 
 	private void updateMemoryAndCaches(int cacheLine, int indexInCacheLine, long currentTime) {
 		int address = cache[cacheLine][indexInCacheLine].getAddress();
-		int value = cache[cacheLine][indexInCacheLine].getValue();
+		Object value = cache[cacheLine][indexInCacheLine].getValue();
 		Memory.store(address, value);
 		if(l2!=null){
 			//TODO salnseh
