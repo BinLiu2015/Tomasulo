@@ -42,6 +42,10 @@ public class MemoryWrapper {
 		nc.setL3(nc3);
 		c = new Cache(3, nc, nc2, nc3);
 	}
+	
+	public void store(int address, int val){
+		Memory.store(address, val);
+	}
 
 	public MemoryWrapper(int memoryAccessTime, L1Cache nc, L2Cache nc2,
 			L3Cache nc3) {

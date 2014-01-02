@@ -1,6 +1,9 @@
+import java.io.BufferedReader;
+import java.io.FileReader;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.Scanner;
+import java.util.StringTokenizer;
 
 import memory.L1Cache;
 import memory.L2Cache;
@@ -118,7 +121,17 @@ public class Main {
 		String file = sc.nextLine();
 		Assembler assembler = new Assembler(file);
 		ArrayList<InstructionEntry> instructionList = assembler.read();
-
+		
+		file = "Memory.txt";
+		BufferedReader br = new BufferedReader(new FileReader(file));
+		String line= "";
+		while((line=br.readLine())!=null){
+			StringTokenizer st = new StringTokenizer(line);
+			int add = Integer.parseInt(st.nextToken());
+			int val = Integer.parseInt(st.nextToken());
+			Simulator.memory.store(add, val);
+		}
+		
 		Simulator.memory.loadInstructions(instructionList, 0);
 
 		Simulator.cycle = 0;

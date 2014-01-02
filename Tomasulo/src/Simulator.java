@@ -76,6 +76,22 @@ public class Simulator {
 
 		programDone = false;
 		commitDone = false;
+		
+		String file = "Memory.txt";
+		try{
+		BufferedReader br = new BufferedReader(new FileReader(file));
+		String line= "";
+
+		while((line=br.readLine())!=null){
+			StringTokenizer st = new StringTokenizer(line);
+			int add = Integer.parseInt(st.nextToken());
+			int val = Integer.parseInt(st.nextToken());
+			Simulator.memory.store(add, val);
+		}
+		}
+		catch (IOException e){
+			
+		}
 	}
 
 	static boolean isMemory(InstructionType type) {
