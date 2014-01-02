@@ -45,6 +45,7 @@ public class Simulator {
 		cycle = 0;
 
 		regFile = new int[8]; // repeat for all arrays
+		regStatus = new int[8];
 		memory = new Memory(10);
 
 		programDone = false;
@@ -57,10 +58,9 @@ public class Simulator {
 	}
 
 	static boolean writesToReg(InstructionType type) {
-		return type == InstructionType.LOAD || type == InstructionType.JUMPL
-				|| type == InstructionType.ADD || type == InstructionType.SUB
-				|| type == InstructionType.ADDI || type == InstructionType.NAND
-				|| type == InstructionType.MULT;
+		return type == InstructionType.LOAD || type == InstructionType.ADD
+				|| type == InstructionType.SUB || type == InstructionType.ADDI
+				|| type == InstructionType.NAND || type == InstructionType.MULT;
 
 	}
 
@@ -68,15 +68,23 @@ public class Simulator {
 		// TODO: Check how to handle similar instruction types
 		for (int i = 0; i < resvStations.length; i++) {
 			ReservationStation entry = resvStations[i];
-			if (entry.busy == false && entry.type == type)
+			if (entry.busy == false && entry.type == getFunctionalUnit(type))
 				return entry;
 		}
 		return null;
 	}
 
-	static void commit() {
-		// TODO: Flushing when wrong branch prediction
+	static InstructionType getFunctionalUnit(InstructionType type) {
+		switch (type) {
+		case ADD:
+		case ADDI:
+			return InstructionType.ADD;
+		default:
+			return type;
+		}
+	}
 
+	static void commit() {
 		if (reorderBuffer.isEmpty()) {
 			if (programDone)
 				commitDone = true;
@@ -87,10 +95,11 @@ public class Simulator {
 
 		switch (entry.getType()) {
 		case STORE:
-			memory.writeData(entry.getDest(), entry.getVal());
-
-			// Assume immediate value is in VALUE field of rob entry
-			// Assume original PC + 1 in the DESTINATION field
+			if (memory.writeData(entry.getDest(), entry.getVal()))
+				reorderBuffer.moveHead();
+			break;
+		// Assume immediate value is in VALUE field of rob entry
+		// Assume original PC + 1 in the DESTINATION field
 		case BRANCH:
 			if ((entry.getVal() > 0 && entry.isBranchTaken())
 					|| (entry.getVal() < 0 && !entry.isBranchTaken())) {
@@ -105,49 +114,47 @@ public class Simulator {
 			break;
 		default:
 			regFile[entry.getDest()] = entry.getVal();
+			reorderBuffer.moveHead();
 		}
 
-		reorderBuffer.moveHead();
 	}
 
 	static void write() {
 		for (int i = 0; i < resvStations.length; i++) {
-			ReservationStation entry = resvStations[i];
-			if (entry.busy && entry.stage == Stage.EXECUTE
-					&& entry.remainingCycles <= 0) {
+			ReservationStation rs = resvStations[i];
+			if (rs.busy && rs.stage == Stage.EXECUTE && rs.remainingCycles <= 0) {
 				// Updating ROB
 
-				entry.stage = Stage.WRITE;
-				Integer result = entry.run(); // Value from functional unit
+				rs.stage = Stage.WRITE;
+				Integer result = rs.run(); // Value from functional unit
 				if (result == null)
 					return;
 
 				// Updating Reorder Buffer Entry
-				RobEntry robEntry = (RobEntry) reorderBuffer
-						.get(entry.getRob());
+				RobEntry robEntry = (RobEntry) reorderBuffer.get(rs.getRob());
 				robEntry.setReady();
 				robEntry.setValue(result);
 
-				if (writesToReg(entry.getType())
-						&& regStatus[robEntry.getDest()] == entry.getRob()) {
+				if (writesToReg(rs.getType())
+						&& regStatus[robEntry.getDest()] == rs.getRob()) {
 					regStatus[robEntry.getDest()] = -1;
 				}
 
 				// Updating reservation stations
 				for (int j = 0; j < resvStations.length; j++) {
-					ReservationStation rs = resvStations[j];
-					if (entry.getRob() == rs.qj) {
-						rs.qj = 0;
-						rs.vj = result;
+					ReservationStation resvStation = resvStations[j];
+					if (rs.getRob() == resvStation.qj) {
+						resvStation.qj = 0;
+						resvStation.vj = result;
 					}
-					if (entry.getRob() == rs.qk) {
-						rs.qk = 0;
-						rs.vk = result;
+					if (rs.getRob() == resvStation.qk) {
+						resvStation.qk = 0;
+						resvStation.vk = result;
 					}
 				}
 			}
-			entry.busy = false;
-			// TODO: Clear Reservation Station
+			rs.busy = false;
+			rs.clear();
 		}
 	}
 
@@ -157,12 +164,9 @@ public class Simulator {
 			if (entry.busy == false)
 				continue;
 
-			if (entry.stage == Stage.ISSUE && entry.qj == 0 && entry.qk == 0) {
+			if (entry.stage == Stage.ISSUE && entry.qj == 0 && entry.qk == 0)
 				entry.stage = Stage.EXECUTE;
-				if (isMemory(entry.type))
-					entry.address = entry.vj + entry.address;
-			} else if (entry.stage == Stage.EXECUTE
-					&& entry.remainingCycles > 0)
+			else if (entry.stage == Stage.EXECUTE && entry.remainingCycles > 0)
 				entry.remainingCycles--;
 		}
 	}
@@ -171,58 +175,68 @@ public class Simulator {
 		if (instructionBuffer.isEmpty() || reorderBuffer.isFull())
 			return;
 
-		InstructionEntry entry = (InstructionEntry) instructionBuffer
-				.getFirst();
-		ReservationStation rs = getEmptyRS(entry.getType());
+		InstructionEntry inst = (InstructionEntry) instructionBuffer.getFirst();
+		ReservationStation rs = getEmptyRS(inst.getType());
 
 		if (rs != null) {
 			// Issue, fill in reservation station and rob and register status
 			// table
 			instructionBuffer.moveHead();
 
-			if (regStatus[entry.getRS()] != -1) {
-				rs.qj = regStatus[entry.getRS()];
+			if (regStatus[inst.getRS()] != -1) {
+				rs.qj = regStatus[inst.getRS()];
 				rs.vj = 0;
 			} else {
 				rs.qj = 0;
-				rs.vj = regFile[entry.getRS()];
+				rs.vj = regFile[inst.getRS()];
 			}
 
-			if (entry.getType() == InstructionType.ADD
-					|| entry.getType() == InstructionType.SUB
-					|| entry.getType() == InstructionType.MULT
-					|| entry.getType() == InstructionType.NAND) {
-				// Instructions that have two source operands
-				if (regStatus[entry.getRT()] != -1) {
-					rs.qk = regStatus[entry.getRT()];
+			switch (inst.getType()) {
+			case ADD:
+			case SUB:
+			case MULT:
+			case NAND:
+				if (regStatus[inst.getRT()] != -1) {
+					rs.qk = regStatus[inst.getRT()];
 					rs.vk = 0;
 				} else {
 					rs.qk = 0;
-					rs.vk = regFile[entry.getRT()];
+					rs.vk = regFile[inst.getRT()];
 				}
-			} else {
-				// Immediate value
+				break;
+			case BRANCH:
+			case STORE:
+				if (regStatus[inst.getRD()] != -1) {
+					rs.qk = regStatus[inst.getRT()];
+					rs.vk = 0;
+				} else {
+					rs.qk = 0;
+					rs.vk = regFile[inst.getRT()];
+				}
+				break;
+			default:
 				rs.qk = 0;
 				rs.vk = 0;
-				rs.address = entry.getRT();
+				rs.address = inst.getRT();
 			}
 
-			// TODO: Store handling
-
 			rs.setRob(reorderBuffer.tailIndex());
-			if (instructionCycles.containsKey(entry.getType())) {
-				rs.setCycles(instructionCycles.get(entry.getType()));
+			if (instructionCycles.containsKey(inst.getType())) {
+				rs.setCycles(instructionCycles.get(inst.getType()));
 			} else {
 				rs.setCycles(1);
 			}
 			rs.setBusy(true);
 			rs.setStage(Stage.ISSUE);
-			rs.setType(entry.getType());
 
-			int destination = entry.getRD();
+			int destination = inst.getRD();
 
 			if (writesToReg(rs.getType())) {
 				regStatus[destination] = reorderBuffer.tailIndex();
+			} else if (inst.getType() == InstructionType.BRANCH) {
+				destination = inst.getInstAddress(); // put the original pc in
+														// the dest field of the
+														// rob
 			} else {
 				destination = -1;
 			}
@@ -235,7 +249,8 @@ public class Simulator {
 	}
 
 	static void fetch() {
-		// TODO: Check that the instruction fetched is the pseudo end
+		if (programDone)
+			return;
 		InstructionEntry inst = (InstructionEntry) memory
 				.readInstruction(pc * 2);
 
@@ -260,6 +275,8 @@ public class Simulator {
 				pc = regFile[inst.getRD()];
 				break;
 			}
+			case END:
+				programDone = true;
 			default:
 				pc += 1; // For now, word consists of 2 bytes, and we're
 							// accessing the first byte
@@ -273,13 +290,15 @@ public class Simulator {
 
 		initializeDefault();
 
-		while (pc < instructionMemory.length) {
+		while (!commitDone) {
 			commit();
 			write();
 			execute();
 			issue();
 			fetch();
-
+			
+			//TODO: Conclude the simulation, calculate output
+			//		Dont increment cycles if done
 			cycle++;
 		}
 	}

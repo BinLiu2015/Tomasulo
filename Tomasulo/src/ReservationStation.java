@@ -1,4 +1,6 @@
+import buffers.ReorderBuffer;
 import entries.InstructionType;
+import entries.RobEntry;
 
 public class ReservationStation {
 
@@ -106,11 +108,16 @@ public class ReservationStation {
 		case NAND:
 			return ~(vj & vk);
 		case LOAD:
+			address = vj + address;
 			return (Integer) Simulator.memory.readData(address);
 		case STORE:
+			address = vj + address;
+			((RobEntry)Simulator.reorderBuffer.get(rob)).setDestination(address);
 			return Simulator.memory.writeData(address, vk) ? null : 1;
 		case BRANCH:
-			Simulator.reorderBuffer.get(rob);
+			RobEntry robEntry = (RobEntry) Simulator.reorderBuffer.get(rob);
+			robEntry.setBranchTaken(vj == vk);
+			return address;
 
 		default:
 			return null;

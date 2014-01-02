@@ -8,5 +8,5 @@ public enum InstructionType {
 	END,
 	JUMPL,  // Jump and link  
 	RET,
-	NAND
+	NAND,
 }

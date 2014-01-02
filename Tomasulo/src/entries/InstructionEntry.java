@@ -1,11 +1,12 @@
 package entries;
 
-public class InstructionEntry implements Entry{
+public class InstructionEntry implements Entry {
 
 	private int rs, rt; // Address is rt in case of load/store
 	private int rd;
 
 	private InstructionType type;
+	private int instructionAddress; // for branching
 
 	public InstructionType getType() {
 		return type;
@@ -23,4 +24,11 @@ public class InstructionEntry implements Entry{
 		return rd;
 	}
 
+	public int getInstAddress() {
+		return instructionAddress;
+	}
+	
+	public void setInstAddress(int address){
+		instructionAddress = address;
+	}
 }
