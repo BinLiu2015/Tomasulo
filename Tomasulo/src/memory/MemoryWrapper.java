@@ -87,7 +87,7 @@ public class MemoryWrapper {
 		if (!busy) {
 			i = new Instruction();
 			try {
-				c.write(address, val, currentTime, i);
+				c.write(address, val, currentTime, i, false);
 			} catch (Exception e) {
 				System.out.println(e);
 			}
