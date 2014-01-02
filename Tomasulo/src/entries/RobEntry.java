@@ -9,6 +9,11 @@ public class RobEntry implements Entry {
 	boolean ready;
 
 	InstructionType type;
+	
+	public String toString(){
+		return String.format("ROB Destination = %d, value = %d, ready = %b type = %s", destination, value,
+				ready, type.toString());
+	}
 
 	public RobEntry(int destination, InstructionType type) {
 		this.destination = destination;

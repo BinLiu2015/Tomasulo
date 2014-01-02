@@ -143,7 +143,7 @@ public class Cache {
 		// System.out.println(Processor.mem.toString());
 	}
 
-	/*
+	
 	public static void main(String[] args) throws Exception {
 		L1Cache nc = new L1Cache(L1Cache.WRITE_BACK, 10, 256, 32, 2);
 		L2Cache nc2 = new L2Cache(L1Cache.WRITE_BACK, 10, 256, 64, 2);
@@ -170,7 +170,7 @@ public class Cache {
 		// System.out.println(c.read(22, 5, s));
 		// System.out.println(c.read(7, 7, s));
 
-		c.write(6, new Integer(1999), 1, s);
+		c.write(24, new Integer(1999), 1, s);
 		System.out.println(nc3);
 		System.out.println(nc2);
 		System.out.println(nc);
@@ -185,5 +185,5 @@ public class Cache {
 		System.out.println(nc);
 		System.out.println(mem);
 	}
-	*/
+	
 }

@@ -10,6 +10,8 @@ public class Simulator {
 	// TODO: Implementing actual memory access
 	// TODO: Change arrays of instruction buffers and rob to use buffer classes
 
+	static boolean DEBUG = true;
+	
 	static int cycle; // Current cycle
 	static int pc;
 
@@ -56,6 +58,8 @@ public class Simulator {
 		resvStations.add(new ReservationStation(InstructionType.MUL));
 		resvStations.add(new ReservationStation(InstructionType.BEQ));
 		resvStations.add(new ReservationStation(InstructionType.BEQ));
+		resvStations.add(new ReservationStation(InstructionType.SW));
+		resvStations.add(new ReservationStation(InstructionType.LW));
 		
 		
 		//memory = new MemoryWrapper(instructionList, 0);
@@ -113,11 +117,15 @@ public class Simulator {
 			return; // Empty buffer
 		}
 
-		RobEntry entry = (RobEntry) reorderBuffer.getFirst();
+
+		RobEntry entry = (RobEntry) reorderBuffer.getFirst();		
 		if(!entry.isReady()) return;
+		
+		//if(DEBUG)System.out.println(entry);
+		
 		switch (entry.getType()) {
 		case SW:
-			if (memory.writeData(entry.getDest(), entry.getVal(), cycle));
+			if (memory.writeData(entry.getDest(), entry.getVal(), cycle))
 				reorderBuffer.moveHead();
 			break;
 		// Assume immediate value is in VALUE field of rob entry
@@ -152,11 +160,12 @@ public class Simulator {
 			if (rs.busy && rs.stage == Stage.EXECUTE && rs.remainingCycles <= 0) {
 				// Updating ROB
 
-				rs.stage = Stage.WRITE;
 				Integer result = rs.run(); // Value from functional unit
 				if (result == null)
 					return;
 
+				rs.stage = Stage.WRITE;
+				
 				// Updating Reorder Buffer Entry
 				RobEntry robEntry = (RobEntry) reorderBuffer.get(rs.getRob());
 				robEntry.setReady();
@@ -192,8 +201,10 @@ public class Simulator {
 			if (entry.busy == false)
 				continue;
 
-			if (entry.stage == Stage.ISSUE && entry.qj == -1 && entry.qk == -1)
+			if (entry.stage == Stage.ISSUE && entry.qj == -1 && entry.qk == -1){
 				entry.stage = Stage.EXECUTE;
+				entry.address = entry.vj + entry.address;
+			}
 			else if (entry.stage == Stage.EXECUTE && entry.remainingCycles > 0)
 				entry.remainingCycles--;
 		}
@@ -296,11 +307,18 @@ public class Simulator {
 	static void fetch() {
 		if (programDone)
 			return;
-		InstructionEntry inst = (InstructionEntry) memory
+		InstructionEntry inst = null;;
+		
+		try{
+			inst = (InstructionEntry) memory
 				.readInstruction(pc * 2, cycle);
-
-		if (inst != null && !instructionBuffer.isFull()) {
-			//System.out.println("Fetched instruction " + inst.getType());
+		} catch(NullPointerException e){
+			//e.printStackTrace();
+			return;
+		}
+				
+		if (inst!= null && !instructionBuffer.isFull()) {
+			System.out.println("Fetched instruction " + inst.getType());
 			switch (inst.getType()) {
 			case JMP: {
 				pc += 1 + regFile[inst.getRD()] + inst.getRS();

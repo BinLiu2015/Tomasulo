@@ -14,6 +14,7 @@ import memory.*;
 public class MemoryWrapper {
 
 	Instruction i;
+	Instruction i2;
 	InstructionEntry inst;
 	Integer val;
 
@@ -25,9 +26,9 @@ public class MemoryWrapper {
 	public MemoryWrapper() {
 		Memory mem = new Memory(1024, 10);
 		Memory.store(0, 4);
-		L1Cache nc = new L1Cache(L1Cache.WRITE_BACK, 10, 256, 32, 2);
-		L2Cache nc2 = new L2Cache(L1Cache.WRITE_BACK, 10, 256, 64, 2);
-		L3Cache nc3 = new L3Cache(L1Cache.WRITE_BACK, 10, 512, 128, 2);
+		L1Cache nc = new L1Cache(L1Cache.WRITE_THROUGH, 10, 256, 32, 2);
+		L2Cache nc2 = new L2Cache(L1Cache.WRITE_THROUGH, 10, 256, 64, 2);
+		L3Cache nc3 = new L3Cache(L1Cache.WRITE_THROUGH, 10, 512, 128, 2);
 		
 		nc3.setL1(nc);
 		nc3.setL2(nc2);
@@ -47,8 +48,10 @@ public class MemoryWrapper {
 	public Integer readData(int address, int currentTime) {
 		if (!busy) {
 			i = new Instruction();
+			busy = true;
 			try {
 				val = (Integer) c.read(address, currentTime, i);
+				if(val == null) val = 0;
 			} catch (Exception e) {
 				// TODO Auto-generated catch block
 			}
@@ -66,15 +69,15 @@ public class MemoryWrapper {
 
 	public InstructionEntry readInstruction(int address, int currentTime) {
 		if (!readingInstruction) {
-			i = new Instruction();
+			i2 = new Instruction();
 			readingInstruction = true;
 			try {
-				inst = (InstructionEntry) c.read(address, currentTime, i);
+				inst = (InstructionEntry) Cache.read(address, currentTime, i2);
 			} catch (Exception e) {
 				e.printStackTrace();
 			}
 			return null;
-		} else if (readingInstruction && currentTime <  i.getCacheEndTime() ) {
+		} else if (readingInstruction && currentTime <  i2.getCacheEndTime() ) {
 			return null;
 		} else if (readingInstruction) {
 			readingInstruction = false;
@@ -86,17 +89,20 @@ public class MemoryWrapper {
 	public boolean writeData(int address, int val, int currentTime) {
 		if (!busy) {
 			i = new Instruction();
+			busy = true;
 			try {
-				c.write(address, val, currentTime, i);
+				Cache.write(address, val, currentTime, i);
 			} catch (Exception e) {
 				System.out.println(e);
 			}
 			return false;
 		} else {
-			if (i.getCacheEndTime() < currentTime)
+			if (currentTime < i.getCacheEndTime())
 				return false;
-			else
+			else{
+				busy = false;
 				return true;
+			}
 		}
 
 	}
