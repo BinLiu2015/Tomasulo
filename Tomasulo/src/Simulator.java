@@ -33,6 +33,20 @@ public class Simulator {
 								// committed
 
 	static void initializeDefault() {
+
+		Assembler assembler = new Assembler();
+		ArrayList<InstructionEntry> instructionList = assembler.read();
+
+		cycle = 0;
+		pc = 0;
+
+		regFile = new int[8]; // repeat for all arrays
+		regStatus = new int[8];
+		for (int i = 0; i < 8; i++) {
+			regFile[i] = i;
+			regStatus[i] = -1;
+		}
+
 		instructionBuffer = new InstructionBuffer(100);
 		reorderBuffer = new ReorderBuffer(100);
 
@@ -45,7 +59,8 @@ public class Simulator {
 		resvStations.add(new ReservationStation(InstructionType.BEQ));
 
 		// memory = new MemoryWrapper(instructionList, 0);
-		
+		memory = new MemoryWrapper();
+		memory.loadInstructions(instructionList, 0);
 
 		instructionCycles = new HashMap<InstructionType, Integer>();
 		instructionCycles.put(InstructionType.ADD, 1);
@@ -54,7 +69,8 @@ public class Simulator {
 		instructionCycles.put(InstructionType.MUL, 1);
 		instructionCycles.put(InstructionType.SW, 1);
 
-		
+		programDone = false;
+		commitDone = false;
 	}
 
 	static boolean isMemory(InstructionType type) {
@@ -337,13 +353,22 @@ public class Simulator {
 			issue();
 			fetch();
 
-			if (commitDone)
-				break;
+			// TODO: Conclude the simulation, calculate output
+			// Dont increment cycles if done
 			cycle++;
 		}
 
 		System.out.println("Number of cycles taken is " + cycle);
+		System.out.println("IPC: "  + (pc-1) / (double)cycle );
+		System.out.println("For Lv1 Cache: " + memory.getL1CacheR());
+		System.out.println("For Lv2 Cache: " + memory.getL2CacheR());
+		System.out.println("For Lv3 Cache: " + memory.getL3CacheR());
 		for (int i = 0; i < regFile.length; i++)
 			System.out.print(regFile[i] + " ");
+	}
+
+	public static void main(String... args) {
+		initializeDefault();
+		run();
 	}
 }
