@@ -1,7 +1,7 @@
 import java.util.*;
 import java.io.*;
 
-import memory.Memory;
+import memory.*;
 import entries.*;
 import buffers.*;
 
@@ -21,7 +21,7 @@ public class Simulator {
 
 	static ReservationStation[] resvStations;
 
-	static Memory memory;
+	static MemoryWrapper memory;
 
 	static HashMap<InstructionType, Integer> instructionCycles;
 	// Number of cycles to be taken by each instruction type
@@ -58,7 +58,8 @@ public class Simulator {
 		resvStations[5] = new ReservationStation(InstructionType.BEQ);
 		
 		
-		memory = new Memory(instructionList, 0);
+		//memory = new MemoryWrapper(instructionList, 0);
+		memory = new MemoryWrapper();
 		
 		instructionCycles = new HashMap<InstructionType, Integer>();
 		instructionCycles.put(InstructionType.ADD, 4);
@@ -115,7 +116,7 @@ public class Simulator {
 		if(!entry.isReady()) return;
 		switch (entry.getType()) {
 		case SW:
-			if (memory.writeData(entry.getDest(), entry.getVal()))
+			if (memory.writeData(entry.getDest(), entry.getVal(), cycle));
 				reorderBuffer.moveHead();
 			break;
 		// Assume immediate value is in VALUE field of rob entry
@@ -293,7 +294,7 @@ public class Simulator {
 		if (programDone)
 			return;
 		InstructionEntry inst = (InstructionEntry) memory
-				.readInstruction(pc * 2);
+				.readInstruction(pc * 2, cycle);
 
 		if (inst != null && !instructionBuffer.isFull()) {
 

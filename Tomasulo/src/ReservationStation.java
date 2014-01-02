@@ -115,11 +115,11 @@ public class ReservationStation {
 			return ~(vj & vk);
 		case LW:
 			address = vj + address;
-			return (Integer) Simulator.memory.readData(address);
+			return (Integer) Simulator.memory.readData(address, Simulator.cycle);
 		case SW:
 			address = vj + address;
 			((RobEntry)Simulator.reorderBuffer.get(rob)).setDestination(address);
-			return Simulator.memory.writeData(address, vk) ? null : 1;
+			return vk;
 		case BEQ:
 			RobEntry robEntry = (RobEntry) Simulator.reorderBuffer.get(rob);
 			robEntry.setBranchTaken(vj == vk);
