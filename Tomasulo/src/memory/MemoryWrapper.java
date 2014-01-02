@@ -29,7 +29,7 @@ public class MemoryWrapper {
 	public MemoryWrapper() {
 		Memory mem = new Memory(1024, 10);
 		Memory.store(0, 4);
-		
+
 		nc = new L1Cache(L1Cache.WRITE_BACK, 10, 256, 32, 2);
 		nc2 = new L2Cache(L1Cache.WRITE_BACK, 10, 256, 64, 2);
 		nc3 = new L3Cache(L1Cache.WRITE_BACK, 10, 512, 128, 2);
@@ -100,12 +100,13 @@ public class MemoryWrapper {
 			i2 = new Instruction();
 			readingInstruction = true;
 			try {
-				inst = (InstructionEntry) c.read(address, currentTime, i2, true);
+				inst = (InstructionEntry) c
+						.read(address, currentTime, i2, true);
 			} catch (Exception e) {
 				e.printStackTrace();
 			}
 			return null;
-		} else if (readingInstruction && currentTime <  i2.getCacheEndTime() ) {
+		} else if (readingInstruction && currentTime < i2.getCacheEndTime()) {
 			return null;
 		} else if (readingInstruction) {
 			readingInstruction = false;
@@ -119,7 +120,7 @@ public class MemoryWrapper {
 			i = new Instruction();
 			busy = true;
 			try {
-				Cache.write(address, val, currentTime, i);
+				Cache.write(address, val, currentTime, i, false);
 			} catch (Exception e) {
 				System.out.println(e);
 			}
@@ -127,7 +128,7 @@ public class MemoryWrapper {
 		} else {
 			if (currentTime < i.getCacheEndTime())
 				return false;
-			else{
+			else {
 				busy = false;
 				return true;
 			}

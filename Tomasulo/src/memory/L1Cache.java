@@ -7,11 +7,13 @@ public class L1Cache {
 	private int cycles;
 	private int m, s, l;
 	private int hits, misses;
-	private static CacheEntry[][] cache;
+	private static CacheEntry[][] instructionsCache;
+	private static CacheEntry[][] dataCache;
 	private L2Cache l2;
 	private L3Cache l3;
 	private int memAddSize;
 	private int disp;
+	private static CacheEntry[][] cache;
 	final static String NOT_FOUND = "not found l1";
 	public final static String WRITE_BACK = "Write Back";
 	public final static String WRITE_THROUGH = "Write Through";
@@ -23,24 +25,47 @@ public class L1Cache {
 		this.l = l;
 		this.m = m;
 		this.disp = (Log.log(l / 16));
+		instructionsCache = new CacheEntry[s / l][l / 16];
+		dataCache = new CacheEntry[s / l][l / 16];
 		cache = new CacheEntry[s / l][l / 16];
 		hits = misses = 0;
 	}
 
-	public Object readFromCache(int address, long currentTime) throws Exception {
+	public Object readFromCache(int address, long currentTime,
+			boolean readInstruction) throws Exception {
 		int baseAdress = (int) (address - address % Math.pow(2, disp));
-		for (int i = 0; i < cache.length; i++) {
-			if (cache[i] != null) {
-				if (cache[i][0] != null && cache[i][0].check(baseAdress)) { // Found
-					for (int j = 0; j < cache[i].length; j++) {
-						cache[i][j].setTimeInCache(currentTime);
+		if (readInstruction) {
+			// read from instructionsCache
+			for (int i = 0; i < instructionsCache.length; i++) {
+				if (instructionsCache[i] != null) {
+					if (instructionsCache[i][0] != null
+							&& instructionsCache[i][0].check(baseAdress)) { // Found
+						for (int j = 0; j < instructionsCache[i].length; j++) {
+							instructionsCache[i][j].setTimeInCache(currentTime);
+						}
+						hits++;
+						return instructionsCache[i][address - baseAdress]
+								.getValue();
 					}
-					hits++;
-					return cache[i][address - baseAdress].getValue();
 				}
 			}
+			misses++;
+		} else {
+			// read from dataCache
+			for (int i = 0; i < dataCache.length; i++) {
+				if (dataCache[i] != null) {
+					if (dataCache[i][0] != null
+							&& dataCache[i][0].check(baseAdress)) { // Found
+						for (int j = 0; j < dataCache[i].length; j++) {
+							dataCache[i][j].setTimeInCache(currentTime);
+						}
+						hits++;
+						return dataCache[i][address - baseAdress].getValue();
+					}
+				}
+			}
+			misses++;
 		}
-		misses++;
 		throw new Exception(NOT_FOUND, new Throwable());
 	}
 
@@ -120,10 +145,21 @@ public class L1Cache {
 	}
 
 	private void writeBack(int address, Object value, long currentTime,
-			int index) {
+			int index, boolean readInstruction) {
 		int i = 0;
 		int size = l / 16;
 		for (; i < size; i++) {
+			if (readInstruction) {
+				instructionsCache[index][i].setDirty(true);
+				instructionsCache[index][i].setTimeInCache(currentTime);
+				if (instructionsCache[index][i].getAddress() == address)
+					instructionsCache[index][i].setValue(value);
+			} else {
+				dataCache[index][i].setDirty(true);
+				dataCache[index][i].setTimeInCache(currentTime);
+				if (dataCache[index][i].getAddress() == address)
+					dataCache[index][i].setValue(value);
+			}
 			cache[index][i].setDirty(true);
 			cache[index][i].setTimeInCache(currentTime);
 			if (cache[index][i].getAddress() == address)
@@ -132,11 +168,22 @@ public class L1Cache {
 	}
 
 	private void writeThrough(int address, Object value, long currentTime,
-			int index) {
+			int index, boolean readInstruction) {
 		int i = 0;
 		int size = s / l;
 
 		for (; i < size; i++) {
+			if (readInstruction) {
+				instructionsCache[index][i].setTimeInCache(currentTime);
+				if (instructionsCache[index][i].getAddress() == address) {
+					instructionsCache[index][i].setValue(value);
+				}
+			} else {
+				dataCache[index][i].setTimeInCache(currentTime);
+				if (dataCache[index][i].getAddress() == address) {
+					dataCache[index][i].setValue(value);
+				}
+			}
 			cache[index][i].setTimeInCache(currentTime);
 			if (cache[index][i].getAddress() == address) {
 				cache[index][i].setValue(value);
@@ -146,29 +193,50 @@ public class L1Cache {
 	}
 
 	public void writeToCache(int address, Object value, long currentTime,
-			Instruction instruction) throws Exception {
+			Instruction instruction, boolean readInstruction) throws Exception {
 		int baseAdress = (int) (address - address % Math.pow(2, disp));
 		int index = 0;
 		boolean found = false;
 		instruction.setCacheStartTime(currentTime);
-		for (int i = 0; i < cache.length; i++) {
-			if (cache[i] != null) {
-				if (cache[i][0] != null && cache[i][0].check(baseAdress)) { // Found
-					for (int j = 0; j < cache[i].length; j++) {
-						cache[i][j].setTimeInCache(currentTime);
+
+		if (readInstruction) {
+			for (int i = 0; i < instructionsCache.length; i++) {
+				if (instructionsCache[i] != null) {
+					if (instructionsCache[i][0] != null
+							&& instructionsCache[i][0].check(baseAdress)) { // Found
+						for (int j = 0; j < instructionsCache[i].length; j++) {
+							instructionsCache[i][j].setTimeInCache(currentTime);
+							cache[i][j].setTimeInCache(currentTime);
+						}
+						index = i;
+						found = true;
+						break;
 					}
-					index = i;
-					found = true;
-					break;
+				}
+			}
+		} else {
+			for (int i = 0; i < dataCache.length; i++) {
+				if (dataCache[i] != null) {
+					if (dataCache[i][0] != null
+							&& dataCache[i][0].check(baseAdress)) { // Found
+						for (int j = 0; j < dataCache[i].length; j++) {
+							dataCache[i][j].setTimeInCache(currentTime);
+							cache[i][j].setTimeInCache(currentTime);
+						}
+						index = i;
+						found = true;
+						break;
+					}
 				}
 			}
 		}
 
 		if (found) {
 			if (writePolicy.equals(WRITE_BACK))
-				writeBack(address, value, currentTime, index);
+				writeBack(address, value, currentTime, index, readInstruction);
 			else
-				writeThrough(address, value, currentTime, index);
+				writeThrough(address, value, currentTime, index,
+						readInstruction);
 			instruction.setCacheEndTime(currentTime + cycles);
 			hits++;
 		} else {
@@ -208,7 +276,7 @@ public class L1Cache {
 				index = getIndex(address);
 				if (index == -1)
 					throw new Exception(NOT_FOUND);
-				writeBack(address, value, currentTime, index);
+				writeBack(address, value, currentTime, index, readInstruction);
 			} else {
 				// TODO If found not found in all levels.
 				updateMemoryAndCaches2(address, value, currentTime);
@@ -242,8 +310,15 @@ public class L1Cache {
 	private void addToCache(int index, int baseAddress, Object[] value,
 			long currentTime) {
 		int size = l / 16;
+
+		instructionsCache[index] = new CacheEntry[size];
+		dataCache[index] = new CacheEntry[size];
 		cache[index] = new CacheEntry[size];
 		for (int i = 0; i < size; i++) {
+			instructionsCache[index][i] = new CacheEntry(baseAddress + i,
+					value[i], currentTime);
+			dataCache[index][i] = new CacheEntry(baseAddress + i, value[i],
+					currentTime);
 			cache[index][i] = new CacheEntry(baseAddress + i, value[i],
 					currentTime);
 		}
@@ -458,56 +533,4 @@ public class L1Cache {
 		}
 		return x;
 	}
-
-	/*public static void main(String[] args) throws Exception {
-	System.out.println(Math.pow(2, 16));
-	L1Cache nc = new L1Cache(WRITE_BACK, 10, 256, 64, 2);
-	Memory.store(0, 4);
-	Memory.store(1, 6);
-	Memory.store(2, 8);
-	Memory.store(3, 9);
-	Memory.store(4, 0);
-	Memory.store(5, 3);
-	Memory.store(6, 7);
-	Memory.store(7, 6);
-	
-	nc.readMiss(0, 0);
-	nc.readMiss(8, 1);
-	System.out.println(nc.toString());
-	
-	try{
-	int x = nc.readFromCache(0, 2);
-	System.out.println(x);
-	} catch(Exception e) {
-		System.out.println(e.getMessage());
-	}
-	
-	System.out.println(nc.toString());
-	System.out.println(memory.toString());
-	
-	//nc.writeToCache(1, 100, 1);
-	
-	
-	System.out.println("*****************");
-	System.out.println(nc.toString());
-	System.out.println(memory.toString());
-	
-	nc.readMiss(16, 6);
-	System.out.println("*****************");
-	System.out.println(nc.toString());
-	System.out.println(memory.toString());
-	
-	//nc.writeToCache(20, 55, 100);
-	
-	System.out.println("*****************");
-	System.out.println(nc.toString());
-	System.out.println(memory.toString());
-	
-	nc.readMiss(12, 101);
-	nc.readMiss(12, 102);
-	
-	System.out.println("*****************");
-	System.out.println(nc.toString());
-	System.out.println(memory.toString());
-	}*/
 }
