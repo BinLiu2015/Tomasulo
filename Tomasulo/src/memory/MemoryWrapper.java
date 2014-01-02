@@ -48,7 +48,7 @@ public class MemoryWrapper {
 		if (!busy) {
 			i = new Instruction();
 			try {
-				val = (Integer) c.read(address, currentTime, i);
+				val = (Integer) c.read(address, currentTime, i, false);
 			} catch (Exception e) {
 				// TODO Auto-generated catch block
 			}
@@ -69,7 +69,7 @@ public class MemoryWrapper {
 			i = new Instruction();
 			readingInstruction = true;
 			try {
-				inst = (InstructionEntry) c.read(address, currentTime, i);
+				inst = (InstructionEntry) c.read(address, currentTime, i, true);
 			} catch (Exception e) {
 				e.printStackTrace();
 			}

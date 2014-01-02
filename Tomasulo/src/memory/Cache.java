@@ -12,9 +12,10 @@ public class Cache {
 		l2Cache = l2;
 		l3Cache = l3;
 	}
-
+	
+	//readInstruciton is true if read from the Instruction Cache
 	public static Object read(int address, long currentTime,
-			Instruction instruction) throws Exception {
+			Instruction instruction, boolean readInstruction) throws Exception {
 		instruction.setCacheStartTime(currentTime);
 		Object value;
 
