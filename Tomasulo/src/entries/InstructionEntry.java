@@ -28,7 +28,24 @@ public class InstructionEntry implements Entry {
 		return instructionAddress;
 	}
 	
-	public void setInstAddress(int address){
+	public void setPcAddress(int address){
 		instructionAddress = address;
 	}
+
+	public void setRS(int rs) {
+		this.rs = rs;
+	}
+
+	public void setRT(int rt) {
+		this.rt = rt;
+	}
+
+	public void setRD(int rd) {
+		this.rd = rd;
+	}
+
+	public void setType(InstructionType type) {
+		this.type = type;
+	}
+
 }

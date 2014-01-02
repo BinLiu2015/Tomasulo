@@ -14,8 +14,13 @@ public class ReservationStation {
 	boolean busy;
 
 	Stage stage;
-	InstructionType type;
+	final InstructionType type;
+	InstructionType operation;
 
+	public ReservationStation (InstructionType type){
+		this.type = type;
+	}
+	
 	public int getVj() {
 		return vj;
 	}
@@ -76,10 +81,6 @@ public class ReservationStation {
 		return type;
 	}
 
-	public void setType(InstructionType type) {
-		this.type = type;
-	}
-
 	public int getCycles() {
 		return remainingCycles;
 	}
@@ -95,26 +96,30 @@ public class ReservationStation {
 	public boolean getBusy() {
 		return busy;
 	}
+	
+	public void setOperation(InstructionType operation){
+		this.operation = operation;
+	}
 
 	public Integer run() {
-		switch (type) {
+		switch (operation) {
 		case ADD:
 		case ADDI:
 			return vj + vk;
 		case SUB:
 			return vj - vk;
-		case MULT:
+		case MUL:
 			return vj * vk;
 		case NAND:
 			return ~(vj & vk);
-		case LOAD:
+		case LW:
 			address = vj + address;
 			return (Integer) Simulator.memory.readData(address);
-		case STORE:
+		case SW:
 			address = vj + address;
 			((RobEntry)Simulator.reorderBuffer.get(rob)).setDestination(address);
 			return Simulator.memory.writeData(address, vk) ? null : 1;
-		case BRANCH:
+		case BEQ:
 			RobEntry robEntry = (RobEntry) Simulator.reorderBuffer.get(rob);
 			robEntry.setBranchTaken(vj == vk);
 			return address;
@@ -125,9 +130,10 @@ public class ReservationStation {
 	}
 
 	public void clear() {
-		vj = vk = qj = qk = rob = address = remainingCycles = 0;
+		vj = vk = rob = address = remainingCycles = 0;
+		qj = qk = -1;
 		busy = false;
-		type = null;
+		operation = null;
 		stage = null;
 	}
 

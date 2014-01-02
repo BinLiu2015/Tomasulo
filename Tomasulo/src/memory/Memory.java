@@ -1,5 +1,8 @@
 package memory;
 
+import java.util.*;
+import entries.*;
+
 public class Memory {
 	
 	// Example memory access assuming no caches
@@ -21,6 +24,12 @@ public class Memory {
 		this.accessTime = accessTime;
 	}
 	
+	public Memory(ArrayList<InstructionEntry> instructionList, int startIndex){
+		this(1);
+		for(int i=0; i<instructionList.size(); i++){
+			memory[i*2 + startIndex] = instructionList.get(i);
+		}
+	}
 	
 	public Object read(int address){
 		//Example read from memory
@@ -49,7 +58,8 @@ public class Memory {
 	public Object readInstruction(int address){
 		//TODO
 		//Should start trying to read from L1 instruction cache
-		return null;
+		return memory[address];
+		//return read(address);
 	}
 	
 	public boolean writeData(int address, int val){
