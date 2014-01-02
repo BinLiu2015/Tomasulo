@@ -6,6 +6,7 @@ public class L2Cache {
 	private String writePolicy;
 	private int cycles;
 	private int m, s, l;
+	private int hits, misses;
 	private static CacheEntry[][] cache;
 	private L1Cache l1;
 	private L3Cache l3;
@@ -23,6 +24,7 @@ public class L2Cache {
 		this.m = m;
 		this.disp = (Log.log(l / 16));
 		cache = new CacheEntry[s / l][l / 16];
+		hits = misses = 0;
 	}
 
 	// In case of read hit, get the value and update L1 using the values from L2
@@ -36,10 +38,12 @@ public class L2Cache {
 					}
 					l1.updateFromL2Cache(address, baseAddress, cache[i],
 							currentTime);
+					hits++;
 					return cache[i][address - baseAddress].getValue();
 				}
 			}
 		}
+		misses++;
 		throw new Exception(NOT_FOUND, new Throwable());
 	}
 
@@ -291,7 +295,6 @@ public class L2Cache {
 		Object value = cache[cacheLine][indexInCacheLine].getValue();
 		Memory.store(address, value);
 		if (l3 != null) {
-			// TODO salnseh
 			l3.updateValue(address, value, currentTime);
 		}
 	}
@@ -368,6 +371,10 @@ public class L2Cache {
 		this.l1 = l1;
 	}
 
+	public double getHitRatio() {
+		return (double) hits / (double) (hits + misses);
+	}
+	
 	public String toString() {
 		String x = "";
 		for (int i = 0; i < cache.length; i++) {

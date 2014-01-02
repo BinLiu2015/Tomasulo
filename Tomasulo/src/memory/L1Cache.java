@@ -6,6 +6,7 @@ public class L1Cache {
 	private String writePolicy;
 	private int cycles;
 	private int m, s, l;
+	private int hits, misses;
 	private static CacheEntry[][] cache;
 	private L2Cache l2;
 	private L3Cache l3;
@@ -23,6 +24,7 @@ public class L1Cache {
 		this.m = m;
 		this.disp = (Log.log(l / 16));
 		cache = new CacheEntry[s / l][l / 16];
+		hits = misses = 0;
 	}
 
 	public Object readFromCache(int address, long currentTime) throws Exception {
@@ -33,10 +35,12 @@ public class L1Cache {
 					for (int j = 0; j < cache[i].length; j++) {
 						cache[i][j].setTimeInCache(currentTime);
 					}
+					hits++;
 					return cache[i][address - baseAdress].getValue();
 				}
 			}
 		}
+		misses++;
 		throw new Exception(NOT_FOUND, new Throwable());
 	}
 
@@ -166,7 +170,9 @@ public class L1Cache {
 			else
 				writeThrough(address, value, currentTime, index);
 			instruction.setCacheEndTime(currentTime + cycles);
+			hits++;
 		} else {
+			misses++;
 			if (writePolicy.equals(WRITE_BACK)) {
 				if (l2 != null) {
 					try {
@@ -215,11 +221,9 @@ public class L1Cache {
 			long currentTime) {
 		Memory.store(address, value);
 		if (l2 != null) {
-			// TODO salnseh
 			l2.updateValue(address, value, currentTime);
 		}
 		if (l3 != null) {
-			// TODO salnkateh
 			l3.updateValue(address, value, currentTime);
 		}
 	}
@@ -260,8 +264,17 @@ public class L1Cache {
 	public void updateFromL2Cache(int address, int baseAddress2,
 			CacheEntry[] values, long currentTime) {
 		// TODO handle dirty bits with all below levels of cache.
-		int baseAddress = (int) (address - address % Math.pow(2, disp)); // The base address is modified in the code below
-		int temp = baseAddress; // Stored in temp value to be used as the original base address
+		int baseAddress = (int) (address - address % Math.pow(2, disp)); // The
+																			// base
+																			// address
+																			// is
+																			// modified
+																			// in
+																			// the
+																			// code
+																			// below
+		int temp = baseAddress; // Stored in temp value to be used as the
+								// original base address
 		if (m == 1) {
 			int disp = (Log.log(l / 16));
 			baseAddress = (int) (baseAddress / Math.pow(2, disp));
@@ -430,6 +443,10 @@ public class L1Cache {
 		this.l3 = l3;
 	}
 
+	public double getHitRatio() {
+		return (double) hits / (double) (hits + misses);
+	}
+
 	public String toString() {
 		String x = "";
 		for (int i = 0; i < cache.length; i++) {
@@ -441,56 +458,56 @@ public class L1Cache {
 		}
 		return x;
 	}
-	
+
 	/*public static void main(String[] args) throws Exception {
-		System.out.println(Math.pow(2, 16));
-		L1Cache nc = new L1Cache(WRITE_BACK, 10, 256, 64, 2);
-		Memory.store(0, 4);
-		Memory.store(1, 6);
-		Memory.store(2, 8);
-		Memory.store(3, 9);
-		Memory.store(4, 0);
-		Memory.store(5, 3);
-		Memory.store(6, 7);
-		Memory.store(7, 6);
-		
-		nc.readMiss(0, 0);
-		nc.readMiss(8, 1);
-		System.out.println(nc.toString());
-		
-		try{
-		int x = nc.readFromCache(0, 2);
-		System.out.println(x);
-		} catch(Exception e) {
-			System.out.println(e.getMessage());
-		}
-		
-		System.out.println(nc.toString());
-		System.out.println(memory.toString());
-		
-		//nc.writeToCache(1, 100, 1);
-		
-		
-		System.out.println("*****************");
-		System.out.println(nc.toString());
-		System.out.println(memory.toString());
-		
-		nc.readMiss(16, 6);
-		System.out.println("*****************");
-		System.out.println(nc.toString());
-		System.out.println(memory.toString());
-		
-		//nc.writeToCache(20, 55, 100);
-		
-		System.out.println("*****************");
-		System.out.println(nc.toString());
-		System.out.println(memory.toString());
-		
-		nc.readMiss(12, 101);
-		nc.readMiss(12, 102);
-		
-		System.out.println("*****************");
-		System.out.println(nc.toString());
-		System.out.println(memory.toString());
+	System.out.println(Math.pow(2, 16));
+	L1Cache nc = new L1Cache(WRITE_BACK, 10, 256, 64, 2);
+	Memory.store(0, 4);
+	Memory.store(1, 6);
+	Memory.store(2, 8);
+	Memory.store(3, 9);
+	Memory.store(4, 0);
+	Memory.store(5, 3);
+	Memory.store(6, 7);
+	Memory.store(7, 6);
+	
+	nc.readMiss(0, 0);
+	nc.readMiss(8, 1);
+	System.out.println(nc.toString());
+	
+	try{
+	int x = nc.readFromCache(0, 2);
+	System.out.println(x);
+	} catch(Exception e) {
+		System.out.println(e.getMessage());
+	}
+	
+	System.out.println(nc.toString());
+	System.out.println(memory.toString());
+	
+	//nc.writeToCache(1, 100, 1);
+	
+	
+	System.out.println("*****************");
+	System.out.println(nc.toString());
+	System.out.println(memory.toString());
+	
+	nc.readMiss(16, 6);
+	System.out.println("*****************");
+	System.out.println(nc.toString());
+	System.out.println(memory.toString());
+	
+	//nc.writeToCache(20, 55, 100);
+	
+	System.out.println("*****************");
+	System.out.println(nc.toString());
+	System.out.println(memory.toString());
+	
+	nc.readMiss(12, 101);
+	nc.readMiss(12, 102);
+	
+	System.out.println("*****************");
+	System.out.println(nc.toString());
+	System.out.println(memory.toString());
 	}*/
 }
