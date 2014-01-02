@@ -15,8 +15,6 @@ public class L1Cache {
 	final static String WRITE_BACK = "Write Back";
 	final static String WRITE_THROUGH = "Write Through";
 
-	static Memory memory = new Memory(1024, 0);
-
 	public L1Cache(String wp, int c, int s, int l, int m) {
 		writePolicy = wp;
 		cycles = c;

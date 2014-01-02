@@ -60,6 +60,7 @@ public class Simulator {
 		
 		//memory = new MemoryWrapper(instructionList, 0);
 		memory = new MemoryWrapper();
+		memory.loadInstructions(instructionList, 0);
 		
 		instructionCycles = new HashMap<InstructionType, Integer>();
 		instructionCycles.put(InstructionType.ADD, 1);
@@ -299,7 +300,7 @@ public class Simulator {
 				.readInstruction(pc * 2, cycle);
 
 		if (inst != null && !instructionBuffer.isFull()) {
-
+			//System.out.println("Fetched instruction " + inst.getType());
 			switch (inst.getType()) {
 			case JMP: {
 				pc += 1 + regFile[inst.getRD()] + inst.getRS();
