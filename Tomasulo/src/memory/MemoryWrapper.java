@@ -14,9 +14,9 @@ import memory.*;
 public class MemoryWrapper {
 
 	Instruction i;
-
 	InstructionEntry inst;
 	Integer val;
+
 	boolean busy;
 	Cache c;
 
@@ -30,12 +30,12 @@ public class MemoryWrapper {
 		L3Cache nc3 = new L3Cache(L1Cache.WRITE_BACK, 10, 512, 128, 2);
 		c = new Cache(3, nc, nc2, nc3);
 	}
-
+	
 	public Integer readData(int address, int currentTime) {
 		if (!busy) {
 			i = new Instruction();
 			try {
-				val = c.read(address, currentTime, i);
+				val = (Integer) c.read(address, currentTime, i);
 			} catch (Exception e) {
 				// TODO Auto-generated catch block
 				System.out.println(e);
@@ -86,5 +86,4 @@ public class MemoryWrapper {
 		}
 
 	}
-
 }

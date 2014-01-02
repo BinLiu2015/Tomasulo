@@ -5,6 +5,7 @@ public class CacheEntry {
 	private Object value;
 	private boolean dirty;
 	private long timeInCache;
+
 	public CacheEntry(int address, Object value, long timeInCache) {
 		this.address = address;
 		this.value = value;
@@ -27,7 +28,7 @@ public class CacheEntry {
 		this.address = address;
 	}
 
-	public int getValue() {
+	public Object getValue() {
 		return value;
 	}
 
@@ -50,8 +51,8 @@ public class CacheEntry {
 	public void setTimeInCache(long timeInCache) {
 		this.timeInCache = timeInCache;
 	}
-	
-	public int compare(Object o){
+
+	public int compare(Object o) {
 		CacheEntry c = (CacheEntry) o;
 		if (this.timeInCache < c.timeInCache) {
 			return -1;
@@ -61,10 +62,11 @@ public class CacheEntry {
 		}
 		return 0;
 	}
-	
-	public String toString(){
+
+	public String toString() {
 		String x = "";
-		x = "[ address: " + address + ", Value: " + value + ", time: " + timeInCache + ", Dirty: " + dirty + "]";
+		x = "[ address: " + address + ", Value: " + value + ", time: "
+				+ timeInCache + ", Dirty: " + dirty + "]";
 		return x;
 	}
 
