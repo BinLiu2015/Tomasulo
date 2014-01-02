@@ -49,14 +49,19 @@ public class Simulator {
 		instructionBuffer = new InstructionBuffer(100);
 		reorderBuffer = new ReorderBuffer(100);
 		
-		resvStations = new ReservationStation[2]; //TODO: Change to arraylist
+		resvStations = new ReservationStation[6]; //TODO: Change to arraylist
 		resvStations[0] = new ReservationStation(InstructionType.ADD);
 		resvStations[1] = new ReservationStation(InstructionType.ADD);
+		resvStations[2] = new ReservationStation(InstructionType.MUL);
+		resvStations[3] = new ReservationStation(InstructionType.MUL);
+		resvStations[4] = new ReservationStation(InstructionType.BEQ);
+		resvStations[5] = new ReservationStation(InstructionType.BEQ);
+		
 		
 		memory = new Memory(instructionList, 0);
 		
 		instructionCycles = new HashMap<InstructionType, Integer>();
-		instructionCycles.put(InstructionType.ADD, 1);
+		instructionCycles.put(InstructionType.ADD, 4);
 		instructionCycles.put(InstructionType.BEQ, 1);
 		instructionCycles.put(InstructionType.LW, 1);
 		instructionCycles.put(InstructionType.MUL, 1);
@@ -100,7 +105,7 @@ public class Simulator {
 	}
 
 	static void commit() {
-		if (reorderBuffer.isEmpty()) {
+ 		if (reorderBuffer.isEmpty()) {
 			if (programDone)
 				commitDone = true;
 			return; // Empty buffer
@@ -123,8 +128,9 @@ public class Simulator {
 
 				for (ReservationStation rs : resvStations)
 					rs.clear();
-				pc = (entry.isBranchTaken()) ? entry.getDest() : entry
-						.getDest() + entry.getVal();
+				pc = (entry.isBranchTaken()) ? entry.getDest() + entry.getVal() : entry
+						.getDest();
+				programDone = false;
 			} else {
 				reorderBuffer.moveHead();
 			}
@@ -257,8 +263,8 @@ public class Simulator {
 			}
 
 			rs.setRob(reorderBuffer.tailIndex());
-			if (instructionCycles.containsKey(inst.getType())) {
-				rs.setCycles(instructionCycles.get(inst.getType()));
+			if (instructionCycles.containsKey(rs.getType())) {
+				rs.setCycles(instructionCycles.get(rs.getType()));
 			} else {
 				rs.setCycles(1);
 			}
@@ -298,7 +304,7 @@ public class Simulator {
 			}
 			case BEQ: {
 				inst.setPcAddress(pc+1);
-				pc += inst.getRT() + 1;
+				pc += (inst.getRT() >= 0) ? 1 : inst.getRT() + 1;
 				instructionBuffer.add(inst);
 				break;
 			}

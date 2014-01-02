@@ -27,11 +27,13 @@ public class CircularBuffer {
 	
 	public void moveHead(){
 		head++;
+		head %= buffer.length;
 	}
 	
 	public boolean add(Entry e){
 		if(isFull()) return false;
 		buffer[tail++] = e;
+		tail %= buffer.length;
 		return true;
 	}
 	

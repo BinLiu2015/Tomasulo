@@ -104,8 +104,9 @@ public class ReservationStation {
 	public Integer run() {
 		switch (operation) {
 		case ADD:
-		case ADDI:
 			return vj + vk;
+		case ADDI:
+			return vj + address;
 		case SUB:
 			return vj - vk;
 		case MUL:
