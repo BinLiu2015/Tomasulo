@@ -34,12 +34,12 @@ public class Simulator {
 								// committed
 
 	static void initializeDefault() {
-
+		Simulator.pc = 0;
 		Assembler assembler = new Assembler();
 		ArrayList<InstructionEntry> instructionList = assembler.read();
 
 		cycle = 0;
-		pc = 0;
+		
 
 		regFile = new int[8]; // repeat for all arrays
 		regStatus = new int[8];
@@ -65,7 +65,7 @@ public class Simulator {
 		//memory = new MemoryWrapper(instructionList, 0);
 
 		memory = new MemoryWrapper();
-		memory.loadInstructions(instructionList, 0);
+		memory.loadInstructions(instructionList, pc);
 
 		instructionCycles = new HashMap<InstructionType, Integer>();
 		instructionCycles.put(InstructionType.ADD, 1);

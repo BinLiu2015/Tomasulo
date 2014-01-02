@@ -119,6 +119,7 @@ public class Main {
 		sc.nextLine();
 		System.out.print("Please Enter the name of the program: ");
 		String file = sc.nextLine();
+		Simulator.pc = 0;
 		Assembler assembler = new Assembler(file);
 		ArrayList<InstructionEntry> instructionList = assembler.read();
 		
@@ -132,10 +133,10 @@ public class Main {
 			Simulator.memory.store(add, val);
 		}
 		
-		Simulator.memory.loadInstructions(instructionList, 0);
+		Simulator.memory.loadInstructions(instructionList, Simulator.pc*2);
 
 		Simulator.cycle = 0;
-		Simulator.pc = 0;
+		
 
 		Simulator.regFile = new int[8]; // repeat for all arrays
 		Simulator.regStatus = new int[8];

@@ -18,6 +18,8 @@ public class Assembler {
 		try {
 			BufferedReader br = new BufferedReader(new FileReader(fileName));
 			String s;
+			s = br.readLine();
+			Simulator.pc = Integer.parseInt(s);
 			while ((s = br.readLine()) != null) {
 				InstructionEntry inst = new InstructionEntry();
 				StringTokenizer st = new StringTokenizer(s, " ,");
