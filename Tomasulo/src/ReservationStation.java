@@ -106,7 +106,7 @@ public class ReservationStation {
 		case ADD:
 			return vj + vk;
 		case ADDI:
-			return vj + address;
+			return address;
 		case SUB:
 			return vj - vk;
 		case MUL:
