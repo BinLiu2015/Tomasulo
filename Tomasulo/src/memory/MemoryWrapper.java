@@ -8,7 +8,6 @@ package memory;
 //TODO: Have memory take array list of instructions
 //TODO: Input from user for cache hierarchy
 
-
 import java.util.*;
 import entries.*;
 import memory.*;
@@ -16,7 +15,7 @@ import memory.*;
 public class MemoryWrapper {
 	
 	Instruction i;
-	int val;
+	Object val;
 	boolean busy;
 	Cache c;
 	
@@ -29,7 +28,7 @@ public class MemoryWrapper {
 		c = new Cache(3, nc, nc2, nc3);
 	}
 	
-	public Integer readData(int address, int currentTime){
+	public Object readData(int address, int currentTime){
 		if(!busy){
 			i = new Instruction();
 			try {
@@ -61,5 +60,4 @@ public class MemoryWrapper {
 		//TODO;
 		return false;
 	}
-
 }

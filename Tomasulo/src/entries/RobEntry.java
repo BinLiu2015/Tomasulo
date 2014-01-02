@@ -3,7 +3,7 @@ package entries;
 public class RobEntry implements Entry {
 
 	int destination; // Register Index or Memory Address
-	Object value; // Value to be committed
+	int value; // Value to be committed
 	boolean branchTaken;
 
 	boolean ready;
