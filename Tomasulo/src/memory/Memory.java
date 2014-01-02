@@ -64,7 +64,6 @@ public class Memory {
 	
 	public boolean writeData(int address, int val){
 		//TODO
-		//Should create new DataEntry and write back value
 		return false;
 	}
 }
