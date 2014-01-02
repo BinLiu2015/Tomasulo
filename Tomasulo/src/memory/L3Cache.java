@@ -6,6 +6,7 @@ public class L3Cache {
 	private String writePolicy;
 	private int cycles;
 	private int m, s, l;
+	private int hits, misses;
 	private CacheEntry[][] cache;
 	private L1Cache l1;
 	private L2Cache l2;
@@ -23,6 +24,7 @@ public class L3Cache {
 		this.m = m;
 		this.disp = (Log.log(l / 16));
 		cache = new CacheEntry[s / l][l / 16];
+		hits = misses = 0;
 	}
 
 	public Object readFromCache(int address, long currentTime) throws Exception {
@@ -35,10 +37,12 @@ public class L3Cache {
 					}
 					l2.updateFromL3Cache(address, baseAddress, cache[i],
 							currentTime);
+					hits++;
 					return cache[i][address - baseAddress].getValue();
 				}
 			}
 		}
+		misses++;
 		throw new Exception(NOT_FOUND, new Throwable());
 	}
 
@@ -202,6 +206,10 @@ public class L3Cache {
 		this.l2 = l2;
 	}
 
+	public double getHitRatio() {
+		return (double) hits / (double) (hits + misses);
+	}
+	
 	public String toString() {
 		String x = "";
 		for (int i = 0; i < cache.length; i++) {
